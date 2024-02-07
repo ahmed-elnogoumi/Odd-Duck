@@ -64,14 +64,18 @@ function startVotingSession() {
     }
 }
 
+let lastDisplayedIndices = []; // Array to store indices of products displayed in the last iteration
+
 function imageRender() {
     let displayIndices = [];
     while (displayIndices.length < 3) {
         let index = Math.floor(Math.random() * productList.length);
-        if (!displayIndices.includes(index)) {
+        if (!displayIndices.includes(index) && !lastDisplayedIndices.includes(index)) {
             displayIndices.push(index);
         }
     }
+
+    lastDisplayedIndices = [...displayIndices]; // Update lastDisplayedIndices for the next iteration
 
     const container = document.getElementById('image-display');
     container.innerHTML = '';
@@ -116,14 +120,18 @@ function endVotingSession() {
 
     // Append the button to the container
     container.appendChild(resultsButton);
+
+    // Generate the chart
+    displayResultsChart();
 }
 
 function displayResults() {
-    const container = document.getElementById('image-display');
+
     container.innerHTML = ''; // Clear the container
 
     // Example of displaying results - can be customized
     let resultsList = document.createElement('ul');
+    let resultsGraph = document.createElement('canvas');
     productList.forEach(product => {
         let item = document.createElement('li');
         item.textContent = `${product.name}: ${product.clicks} clicks, ${product.timesShown} times shown`;
@@ -133,5 +141,38 @@ function displayResults() {
     container.appendChild(resultsList);
 }
 
+function displayResultsChart() {
+    const ctx = document.getElementById('resultsChart').getContext('2d');
+    const labels = productList.map(product => product.name);
+    const clicksData = productList.map(product => product.clicks);
+    const viewsData = productList.map(product => product.timesShown);
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Clicks',
+                data: clicksData,
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }, {
+                label: 'Views',
+                data: viewsData,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
 
 startVotingSession();
