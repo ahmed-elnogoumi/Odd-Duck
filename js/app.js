@@ -1,9 +1,14 @@
 function products(name, filepath, timesShown) {
-    this.name = name,
-    this.filepath = filepath,
-    this.timeShown = timesShown,
+    this.name = name;
+    this.filepath = filepath;
+    this.timesShown = timesShown;
     this.clicks = 0;
 }
+
+// Prototype methods for 'products'
+products.prototype.incrementClicks = function() {
+    this.clicks++;
+};
 
 const itemName = ['bag', 'banana', 'bathroom', 'boots', 'breakfast', 'bubblegum', 'chair', 'cthulhu', 'dog-duck', 'dragon', 'pen', 'pet-sweep', 'scissors', 'shark', 'sweep', 'tauntaun', 'unicorn', 'water-can', 'wine-glass'];
 const assets = ['assets/bag.jpg', 'assets/banana.jpg', 'assets/bathroom.jpg', 'assets/boots.jpg', 'assets/breakfast.jpg', 'assets/bubblegum.jpg',  'assets/chair.jpg', 'assets/cuthulu.jpg', 'assets/dog-duck.jpg', 'assets/dargon.jpg', 'assets/pen-sweep.jpg', 'assets/scissors.jpg', 'assets/shark.jpg', 'assets/sweep.png', 'assets/tauntaun.jpg', 'assets/unicorn.jpg', 'assets/water-can.jpg', 'assets/wine-glass.jpg'];
@@ -107,40 +112,48 @@ function imageRender() {
     });
 }
 
+// Modified endVotingSession to include serialization and reconstruction
 function endVotingSession() {
     const container = document.getElementById('image-display');
     container.innerHTML = '<p>Voting session has ended. Thank you for participating!</p>';
+
+    // Serialize productList to JSON and store it
+    const productListJson = JSON.stringify(productList);
+    
+    // Parse JSON back to object
+    const retrievedProductList = JSON.parse(productListJson);
+
+    // Reconstruct productList using the constructor
+    productList = retrievedProductList.map(item => new products(item.name, item.filepath, item.timesShown));
 
     // Create a button element for viewing results
     let resultsButton = document.createElement('button');
     resultsButton.textContent = 'View Results';
     resultsButton.addEventListener('click', function() {
-        displayResults(); // Function to display the results
+        displayResults(); // Adjusted to work with reconstructed productList
+        displayResultsChart(); // Also adjusted accordingly
     });
 
-    // Append the button to the container
     container.appendChild(resultsButton);
-
-    // Generate the chart
-    displayResultsChart();
 }
 
 function displayResults() {
+    // Assume a separate container or ensures it does not remove the canvas for the chart
+    const resultsContainer = document.getElementById('results-container'); // Ensure this is a different container
+    resultsContainer.innerHTML = ''; // Clear the container for results
 
-    container.innerHTML = ''; // Clear the container
-
-    // Example of displaying results - can be customized
     let resultsList = document.createElement('ul');
-    let resultsGraph = document.createElement('canvas');
     productList.forEach(product => {
         let item = document.createElement('li');
         item.textContent = `${product.name}: ${product.clicks} clicks, ${product.timesShown} times shown`;
         resultsList.appendChild(item);
     });
 
-    container.appendChild(resultsList);
+    resultsContainer.appendChild(resultsList);
+    // Do not clear or alter the canvas element here
 }
 
+// This function assumes a <canvas> element with id 'resultsChart' exists in the HTML.
 function displayResultsChart() {
     const ctx = document.getElementById('resultsChart').getContext('2d');
     const labels = productList.map(product => product.name);
@@ -174,5 +187,6 @@ function displayResultsChart() {
         }
     });
 }
+
 
 startVotingSession();
